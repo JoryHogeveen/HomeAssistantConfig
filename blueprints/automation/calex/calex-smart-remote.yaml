@@ -1,0 +1,128 @@
+blueprint:
+
+  name: ZHA - CALEX - Smart remote - Custom Actions
+
+  description: >-
+    This automation simulates the use of the Calex Dimmer Switch Colour Control
+
+  domain: automation
+
+  input:
+    remote:
+      name: Calex remote control
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+#          manufacturer: Calex 
+#          model: Smart Wall Switch 
+    light:
+      name: Light
+      selector:
+        target:
+          entity:
+            domain: light
+#    dim_step:
+#      name: Dim step
+#      description: The dim amound in percentage
+#      default: 10
+#      selector:
+#        number:
+#          min: 0
+#          max: 100
+#          unit_of_measurement: percentage
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+  - choose:
+      # Short-Press on the ON button.
+      - conditions:
+          - "{{ command == 'on' }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light
+
+      # Short-Press on the OFF button.
+      - conditions:
+          - "{{ command == 'off' }}"
+        sequence:
+          - service: light.turn_off
+            target: !input light
+
+      # Short-Press on the DIM UP button.
+      - conditions:
+          - "{{ command == 'step' }}"
+          - "{{ args == [0, 42, 3] }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light
+            data:
+              brightness_step_pct: 10
+#              transition: 1
+
+      # Short-Press on the DIM DOWN button.
+      - conditions:
+          - "{{ command == 'step' }}"
+          - "{{ args == [1, 42, 3] }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light
+            data:
+              brightness_step_pct: -10
+#              transition: 1
+
+      # Hold on the DIM UP button.
+      - conditions:
+          - "{{ command == 'move' }}"
+          - "{{ args == [0, 100] }}"
+        sequence:
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  target: !input light
+                  data:
+                    brightness_step_pct: 10
+#                    transition: 1
+                - delay: 0.5
+
+      # Hold on the DIM DOWN button.
+      - conditions:
+          - "{{ command == 'move' }}"
+          - "{{ args == [1, 100] }}"
+        sequence:
+          - repeat:
+              count: 10
+              sequence:
+                - service: light.turn_on
+                  target: !input light
+                  data:
+                    brightness_step_pct: -10
+#                    transition: 1
+                - delay: 0.5
+
+      # Short-Press on the W button.
+      - conditions:
+          - "{{ command == 'move_to_color_temp' }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light
+            data:
+              color_temp: "{{ args.0 }}"
+              transition: "{{ args.1 }}"
+
+
+    default: []

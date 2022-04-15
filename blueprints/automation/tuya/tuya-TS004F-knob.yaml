@@ -155,6 +155,34 @@ action:
 
     # Short Press
     - conditions:
+        - "{{ command == 'move_hue' }}"
+        - "{{ cluster_id == 768 }}"
+        - "{{ endpoint_id == 1 }}"
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ repeat.index < 24 }}"
+            sequence:
+              - service_template: light.turn_on
+                target: !input light
+                data_template:
+                  hs_color:
+                    - "{{ ( value + (state_attr( light.entity_id , 'hs_color' )[0] or 0)) % 360 }}"
+                    - 100
+                  transition: 0.5
+              - delay:
+                  hours: 0
+                  minutes: 0
+                  seconds: 1
+                  milliseconds: 0
+    - conditions:
+        - "{{ command == 'stop_move_step' }}"
+        - "{{ cluster_id == 768 }}"
+        - "{{ endpoint_id == 1 }}"
+      sequence:
+
+    - conditions:
         - "{{ command == 'remote_button_short_press' }}"
       sequence: !input press_short
 

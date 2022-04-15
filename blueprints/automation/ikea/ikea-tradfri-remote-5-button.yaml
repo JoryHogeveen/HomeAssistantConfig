@@ -7,6 +7,27 @@ blueprint:
   domain: automation
 
   input:
+    mode:
+      name: Automation Mode
+      description: "https://www.home-assistant.io/docs/automation/modes/"
+      default: restart
+      selector:
+        select:
+          mode: dropdown
+          options:
+            - single
+            - restart
+            - queued
+            - parallel
+    max:
+      name: Automation Max Queue
+      description: The maximum number of runs that can be executing and/or queued up at a time.
+      default: 10
+      selector:
+        number:
+          mode: box
+          min: 1
+          max: 100
     remote:
       name: IKEA TRADFRI remote control
       description: Select the remote control you wish to use.
@@ -76,7 +97,8 @@ blueprint:
         action:
       default: []
 
-mode: restart
+mode: !input mode
+max: !input max
 max_exceeded: silent
 
 trigger:

@@ -1,0 +1,130 @@
+blueprint:
+
+  name: ZHA - Tuya - TS0043 3 Button Remote Switch - Custom Actions
+
+  description: >-
+    This automation adds triggers for all actions of the Tuya TS0043 3 button remote.
+
+    Sold on AliExpress by brands like Moes, Girier etc.
+
+  domain: automation
+
+  input:
+    remote:
+      name: Tuya - TS0043 3 Button Remote
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          model: TS0043
+    btn1_single:
+      name: Button 1 - Left - Single
+      selector:
+        action:
+      default: []
+    btn1_double:
+      name: Button 1 - Left - Double
+      selector:
+        action:
+      default: []
+    btn1_hold:
+      name: Button 1 - Left - Hold
+      selector:
+        action:
+      default: []
+    btn2_single:
+      name: Button 2 - Middle - Single
+      selector:
+        action:
+      default: []
+    btn2_double:
+      name: Button 2 - Middle - Double
+      selector:
+        action:
+      default: []
+    btn2_hold:
+      name: Button 2 - Middle - Hold
+      selector:
+        action:
+      default: []
+    btn3_single:
+      name: Button 3 - Right - Single
+      selector:
+        action:
+      default: []
+    btn3_double:
+      name: Button 3 - Right - Double
+      selector:
+        action:
+      default: []
+    btn3_hold:
+      name: Button 3 - Right - Hold
+      selector:
+        action:
+      default: []
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+
+  - choose:
+
+      # Button 1 - Single
+      - conditions:
+          - "{{ endpoint_id == 1 }}"
+          - "{{ command == 'remote_button_short_press' }}"
+        sequence: !input btn1_single
+      # Button 1 - Double
+      - conditions:
+          - "{{ endpoint_id == 1 }}"
+          - "{{ command == 'remote_button_double_press' }}"
+        sequence: !input btn1_double
+      # Button 1 - Hold
+      - conditions:
+          - "{{ endpoint_id == 1 }}"
+          - "{{ command == 'remote_button_long_press' }}"
+        sequence: !input btn1_hold
+
+      # Button 2 - Single
+      - conditions:
+          - "{{ endpoint_id == 2 }}"
+          - "{{ command == 'remote_button_short_press' }}"
+        sequence: !input btn2_single
+      # Button 2 - Double
+      - conditions:
+          - "{{ endpoint_id == 2 }}"
+          - "{{ command == 'remote_button_double_press' }}"
+        sequence: !input btn2_double
+      # Button 2 - Hold
+      - conditions:
+          - "{{ endpoint_id == 2 }}"
+          - "{{ command == 'remote_button_long_press' }}"
+        sequence: !input btn2_hold
+
+      # Button 3 - Single
+      - conditions:
+          - "{{ endpoint_id == 3 }}"
+          - "{{ command == 'remote_button_short_press' }}"
+        sequence: !input btn3_single
+      # Button 3 - Double
+      - conditions:
+          - "{{ endpoint_id == 3 }}"
+          - "{{ command == 'remote_button_double_press' }}"
+        sequence: !input btn3_double
+      # Button 3 - Hold
+      - conditions:
+          - "{{ endpoint_id == 3 }}"
+          - "{{ command == 'remote_button_long_press' }}"
+        sequence: !input btn3_hold
+
+    # Any other event will cancel the repeat loops.
+    default: []

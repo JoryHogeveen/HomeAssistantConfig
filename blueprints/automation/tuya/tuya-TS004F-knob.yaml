@@ -88,6 +88,8 @@ action:
         - "{{ cluster_id == 6 }}"
         - "{{ endpoint_id == 1 }}"
       sequence: !input toggle
+
+    # Command Mode: Dimming
     - conditions:
         - "{{ command == 'step' }}"
         - "{{ cluster_id == 8 }}"
@@ -120,6 +122,8 @@ action:
                 data_template:
                   brightness_step_pct: "{{ - value }}"
                   transition: "{{ speed }}"
+
+    # Command Mode: Color Temperature
     - conditions:
         - "{{ command == 'step_color_temp' }}"
         - "{{ cluster_id == 768 }}"
@@ -153,7 +157,7 @@ action:
                   color_temp: "{{ ( state_attr( light.entity_id, 'color_temp' ) or 300 ) - value }}"
                   transition: "{{ speed }}"
 
-    # Short Press
+    # Command Mode: Color Hue
     - conditions:
         - "{{ command == 'move_hue' }}"
         - "{{ cluster_id == 768 }}"
@@ -182,26 +186,27 @@ action:
         - "{{ endpoint_id == 1 }}"
       sequence:
 
+    # Event mode: Short Press
     - conditions:
         - "{{ command == 'remote_button_short_press' }}"
       sequence: !input press_short
 
-    # Double Press
+    # Event mode: Double Press
     - conditions:
         - "{{ command == 'remote_button_double_press' }}"
       sequence: !input press_double
 
-    # Long Press
+    # Event mode: Long Press
     - conditions:
         - "{{ command == 'remote_button_long_press' }}"
       sequence: !input press_long
 
-    # Rotate Left
+    # Event mode: Rotate Left
     - conditions:
         - "{{ command == 'left' }}"
       sequence: !input rotate_left
 
-    # Rotate Right
+    # Event mode: Rotate Right
     - conditions:
         - "{{ command == 'right' }}"
       sequence: !input rotate_right

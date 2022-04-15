@@ -1,0 +1,71 @@
+blueprint:
+
+  name: ZHA - SONOFF WB01 - 1 Button Remote - Custom Actions
+
+  description: Automate a SONOFF (eWeLink) WB01 button.
+
+  domain: automation
+
+  input:
+    remote:
+      name: SONOFF eWeLink
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          manufacturer: eWeLink
+          model: WB01
+    single:
+      name: Single Press (toggle)
+      description: The action to perform on a single press.
+      selector:
+        action:
+      default: []
+    double:
+      name: Double Press (on)
+      description: The action to perform on a double press.
+      selector:
+        action:
+      default: []
+    hold:
+      name: Press and hold (off)
+      description: The action to perform on press and hold.
+      selector:
+        action:
+      default: []
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+#      cluster_id: "{{ trigger.event.data.cluster_id }}"
+#      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+#      args: "{{ trigger.event.data.args }}"
+
+  - choose:
+      # Single press
+      - conditions:
+          - "{{ command == 'toggle' }}"
+        sequence: !input single
+
+      # Double press
+      - conditions:
+          - "{{ command == 'on' }}"
+        sequence: !input double
+
+      # Press and hold
+      - conditions:
+          - "{{ command == 'off' }}"
+        sequence: !input hold
+
+
+    # Any other event will cancel the repeat loops.
+    default: []

@@ -1,0 +1,207 @@
+blueprint:
+
+  name: ZHA - Aqara Opple - 6 Button Remote Switch - Custom Actions
+
+  description: >-
+    This automation adds triggers for all actions of the Aqara Opple 6 button remote
+
+  domain: automation
+
+  input:
+    remote:
+      name: Aqara Opple - 6 Button Remote
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          model: lumi.remote.b686opcn01
+    btn1_single:
+      name: Button 1 - Top Left - Single
+      selector:
+        action:
+      default: []
+    btn1_double:
+      name: Button 1 - Top Left - Double
+      selector:
+        action:
+      default: []
+    btn1_hold:
+      name: Button 1 - Top Left - Hold
+      selector:
+        action:
+      default: []
+    btn2_single:
+      name: Button 2 - Top Right - Single
+      selector:
+        action:
+      default: []
+    btn2_double:
+      name: Button 2 - Top Right - Double
+      selector:
+        action:
+      default: []
+    btn2_hold:
+      name: Button 2 - Top Right - Hold
+      selector:
+        action:
+      default: []
+    btn3_single:
+      name: Button 3 - Middle Left - Single
+      selector:
+        action:
+      default: []
+    btn3_double:
+      name: Button 3 - Middle Left - Double
+      selector:
+        action:
+      default: []
+    btn3_hold:
+      name: Button 3 - Middle Left - Hold
+      selector:
+        action:
+      default: []
+    btn4_single:
+      name: Button 4 - Middle Right - Single
+      selector:
+        action:
+      default: []
+    btn4_double:
+      name: Button 4 - Middle Right - Double
+      selector:
+        action:
+      default: []
+    btn4_hold:
+      name: Button 4 - Middle Right - Hold
+      selector:
+        action:
+      default: []
+    btn5_single:
+      name: Button 5 - Bottom Left - Single
+      selector:
+        action:
+      default: []
+    btn5_double:
+      name: Button 5 - Bottom Left - Double
+      selector:
+        action:
+      default: []
+    btn5_hold:
+      name: Button 5 - Bottom Left - Hold
+      selector:
+        action:
+      default: []
+    btn6_single:
+      name: Button 6 - Bottom Right - Single
+      selector:
+        action:
+      default: []
+    btn6_double:
+      name: Button 6 - Bottom Right - Double
+      selector:
+        action:
+      default: []
+    btn6_hold:
+      name: Button 6 - Bottom Right - Hold
+      selector:
+        action:
+      default: []
+
+#mode: single
+mode: parallel
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+
+  - choose:
+
+      # Button 1 - Single
+      - conditions:
+          - "{{ command == '1_single' }}"
+        sequence: !input btn1_single
+      # Button 1 - Double
+      - conditions:
+          - "{{ command == '1_double' }}"
+        sequence: !input btn1_double
+      # Button 1 - Hold
+      - conditions:
+          - "{{ command == '1_hold' }}"
+        sequence: !input btn1_hold
+
+      # Button 2 - Single
+      - conditions:
+          - "{{ command == '2_single' }}"
+        sequence: !input btn2_single
+      # Button 2 - Double
+      - conditions:
+          - "{{ command == '2_double' }}"
+        sequence: !input btn2_double
+      # Button 2 - Hold
+      - conditions:
+          - "{{ command == '2_hold' }}"
+        sequence: !input btn2_hold
+
+      # Button 3 - Single
+      - conditions:
+          - "{{ command == '3_single' }}"
+        sequence: !input btn3_single
+      # Button 3 - Double
+      - conditions:
+          - "{{ command == '3_double' }}"
+        sequence: !input btn3_double
+      # Button 3 - Hold
+      - conditions:
+          - "{{ command == '3_hold' }}"
+        sequence: !input btn3_hold
+
+      # Button 4 - Single
+      - conditions:
+          - "{{ command == '4_single' }}"
+        sequence: !input btn4_single
+      # Button 4 - Double
+      - conditions:
+          - "{{ command == '4_double' }}"
+        sequence: !input btn4_double
+      # Button 4 - Hold
+      - conditions:
+          - "{{ command == '4_hold' }}"
+        sequence: !input btn4_hold
+
+      # Button 5 - Single
+      - conditions:
+          - "{{ command == '5_single' }}"
+        sequence: !input btn5_single
+      # Button 5 - Double
+      - conditions:
+          - "{{ command == '5_double' }}"
+        sequence: !input btn5_double
+      # Button 5 - Hold
+      - conditions:
+          - "{{ command == '5_hold' }}"
+        sequence: !input btn5_hold
+
+      # Button 6 - Single
+      - conditions:
+          - "{{ command == '6_single' }}"
+        sequence: !input btn6_single
+      # Button 6 - Double
+      - conditions:
+          - "{{ command == '6_double' }}"
+        sequence: !input btn6_double
+      # Button 6 - Hold
+      - conditions:
+          - "{{ command == '6_hold' }}"
+        sequence: !input btn6_hold
+
+    # Any other event will cancel the repeat loops.
+    default: []

@@ -1,0 +1,135 @@
+blueprint:
+  name: ZHA - IKEA STYRBAR - 4 Button Remote - Custom Actions
+  description: >-
+    This automation supports the use of the IKEA STYRBAR remote control
+    connected through ZHA using your own custom actions on each event.
+
+  domain: automation
+
+  input:
+    remote:
+      name: IKEA STYRBAR remote control
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          manufacturer: IKEA of Sweden
+          model: Remote Control N2
+    dimup_short:
+      name: Short Press - Dim Up Button
+      description: The action to perform on Short Press of the Dim Up Button
+      selector:
+        action:
+      default: []
+    dimdown_short:
+      name: Short Press - Dim Down Button
+      description: The action to perform on Short Press of the Dim Down Button
+      selector:
+        action:
+      default: []
+    left_short:
+      name: Short Press - Left Button
+      description: The action to perform on Short Press of the Color Left Button
+      selector:
+        action:
+      default: []
+    right_short:
+      name: Short Press - Right Button
+      description: The action to perform on Short Press of the Right Button
+      selector:
+        action:
+      default: []
+    dimup_long:
+      name: Long Press - Dim Up Button
+      description: The action to perform on Long Press of the Dim Up Button
+      selector:
+        action:
+      default: []
+    dimdown_long:
+      name: Long Press - Dim Down Button
+      description: The action to perform on Long Press of the Dim Down Button
+      selector:
+        action:
+      default: []
+    left_long:
+      name: Long Press - Left Button
+      description: The action to perform on Long Press of the Left Button
+      selector:
+        action:
+      default: []
+    right_long:
+      name: Long Press - Right Button
+      description: The action to perform on Long Press of the Right Button
+      selector:
+        action:
+      default: []
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - choose:
+      # Short-Press on the dim-up button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "on" }}'
+        sequence: !input dimup_short
+
+      # Long-Press on the dim-up button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "move_with_on_off" }}'
+        sequence: !input dimup_long
+
+      # Short-Press on the dim-down button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "off" }}'
+        sequence: !input dimdown_short
+
+      # Long-Press on the dim-down button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "move" }}'
+        sequence: !input dimdown_long
+
+      # Short-Press on the left button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "press" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [257,13,0] }}"
+        sequence: !input left_short
+
+      # Long-Press on the left button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "hold" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [3329,0] }}"
+        sequence: !input left_long
+
+      # Short-Press on the right button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "press" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [256,13,0] }}"
+        sequence: !input right_short
+
+      # Long-Press on the right button.
+      - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.command == "hold" }}'
+          - condition: template
+            value_template: "{{ trigger.event.data.args == [3328,0] }}"
+        sequence: !input right_long
+
+    # Any other event will cancel the repeat loops.
+    default: []

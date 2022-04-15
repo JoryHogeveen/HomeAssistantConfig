@@ -3,7 +3,8 @@ blueprint:
   name: ZHA - Tuya - TS004F 4 Button Remote Switch - Custom Actions
 
   description: >-
-    This automation adds triggers for all actions of the Tuya TS004F 4 button remote.
+    This automation adds triggers for all actions of the Tuya TS004F 4 button
+    remote in switch mode.
 
     Sold on AliExpress by brands like Moes, Girier etc.
 
@@ -16,6 +17,7 @@ blueprint:
       selector:
         device:
           integration: zha
+          manufacturer: _TZ3000_xabckq1v
           model: TS004F
     btn1_single:
       name: Button 1 - Top Left - Single

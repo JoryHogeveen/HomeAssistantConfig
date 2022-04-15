@@ -120,6 +120,38 @@ action:
                 data_template:
                   brightness_step_pct: "{{ - value }}"
                   transition: "{{ speed }}"
+    - conditions:
+        - "{{ command == 'step_color_temp' }}"
+        - "{{ cluster_id == 768 }}"
+        - "{{ endpoint_id == 1 }}"
+        - "{{ direction == 1 }}"
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ repeat.index < 2 }}"
+            sequence:
+              - service_template: light.turn_on
+                target: !input light
+                data_template:
+                  color_temp: "{{ ( state_attr( light.entity_id, 'color_temp' ) or 300 ) + value }}"
+                  transition: "{{ speed }}"
+    - conditions:
+        - "{{ command == 'step_color_temp' }}"
+        - "{{ cluster_id == 768 }}"
+        - "{{ endpoint_id == 1 }}"
+        - "{{ direction == 3 }}"
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ repeat.index < 2 }}"
+            sequence:
+              - service_template: light.turn_on
+                target: !input light
+                data_template:
+                  color_temp: "{{ ( state_attr( light.entity_id, 'color_temp' ) or 300 ) - value }}"
+                  transition: "{{ speed }}"
 
     # Short Press
     - conditions:

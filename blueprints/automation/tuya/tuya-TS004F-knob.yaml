@@ -1,0 +1,147 @@
+blueprint:
+
+  name: ZHA - Tuya - TS004F Rotating Knob - Custom Actions
+
+  description: >-
+    This automation adds triggers for all actions of the Tuya TS004F rotating knob remote.
+    It can be used in both Command/Dimmer and Event/Scene mode. Both modes have their own actions.
+
+    In Command/Dimmer mode the config is mostly internal except for pressing the button.
+    In Event/Scene mode you can select your own actions.
+    To switch modes you can press the button 3 times fast.
+
+    Sold on AliExpress by brands like Moes, Girier etc.
+
+  domain: automation
+
+  input:
+    remote:
+      name: Tuya - TS004F Rotating Knob
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          manufacturer: _TZ3000_4fjiwweb
+          model: TS004F
+    light:
+      name: Light (Command/Dimmer mode)
+      selector:
+        target:
+          entity:
+            domain: light
+    toggle:
+      name: Toggle (Command/Dimmer mode)
+      selector:
+        action:
+      default: []
+    press_short:
+      name: Short Press (Event/Scene mode)
+      selector:
+        action:
+      default: []
+    press_double:
+      name: Double Press (Event/Scene mode)
+      selector:
+        action:
+      default: []
+    press_long:
+      name: Long Press (Event/Scene mode)
+      selector:
+        action:
+      default: []
+    rotate_left:
+      name: Rotate Left (Event/Scene mode)
+      selector:
+        action:
+      default: []
+    rotate_right:
+      name: Rotate Right (Event/Scene mode)
+      selector:
+        action:
+      default: []
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      light: !input light
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+      direction: "{% if trigger.event.data.args[0] == 0 %} 0 {% elif trigger.event.data.args[0] == 1 %} 1 {% elif trigger.event.data.args[0] == 3 %} 3 {% endif %}"
+      value: "{% if trigger.event.data.args[1] %} {{ trigger.event.data.args[1] / 2 }} {% endif %}"
+      speed: "{% if trigger.event.data.args[2] == 1 %} 0.5 {% else %} 0 {% endif %}"
+
+  - choose:
+
+    # Command Mode
+    - conditions:
+        - "{{ command == 'toggle' }}"
+        - "{{ cluster_id == 6 }}"
+        - "{{ endpoint_id == 1 }}"
+      sequence: !input toggle
+    - conditions:
+        - "{{ command == 'step' }}"
+        - "{{ cluster_id == 8 }}"
+        - "{{ endpoint_id == 1 }}"
+        - "{{ direction == 0 }}"
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ repeat.index < 2 }}"
+            sequence:
+              - service_template: light.turn_on
+                target: !input light
+                data_template:
+                  brightness_step_pct: "{{ value }}"
+                  transition: "{{ speed }}"
+    - conditions:
+        - "{{ command == 'step' }}"
+        - "{{ cluster_id == 8 }}"
+        - "{{ endpoint_id == 1 }}"
+        - "{{ direction == 1 }}"
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: "{{ repeat.index < 2 }}"
+            sequence:
+              - service_template: light.turn_on
+                target: !input light
+                data_template:
+                  brightness_step_pct: "{{ - value }}"
+                  transition: "{{ speed }}"
+
+    # Short Press
+    - conditions:
+        - "{{ command == 'remote_button_short_press' }}"
+      sequence: !input press_short
+
+    # Double Press
+    - conditions:
+        - "{{ command == 'remote_button_double_press' }}"
+      sequence: !input press_double
+
+    # Long Press
+    - conditions:
+        - "{{ command == 'remote_button_long_press' }}"
+      sequence: !input press_long
+
+    # Rotate Left
+    - conditions:
+        - "{{ command == 'left' }}"
+      sequence: !input rotate_left
+
+    # Rotate Right
+    - conditions:
+        - "{{ command == 'right' }}"
+      sequence: !input rotate_right

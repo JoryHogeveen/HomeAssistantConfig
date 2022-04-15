@@ -1,0 +1,125 @@
+blueprint:
+
+  name: ZHA - Tuya - TS004F 4 Button Remote Dimmer - Custom Actions
+
+  description: >-
+    This automation adds triggers for all actions of the Tuya TS004F 4 button
+    remote in dimmer mode.
+
+    Sold on AliExpress by brands like Moes, Girier etc.
+
+  domain: automation
+
+  input:
+    remote:
+      name: Tuya - TS004F 4 Button Remote
+      description: Select the remote control you wish to use.
+      selector:
+        device:
+          integration: zha
+          manufacturer: _TZ3000_xabckq1v
+          model: TS004F
+    btn1_topleft_short:
+      name: Button 1 - Top left - Short
+      selector:
+        action:
+      default: []
+    btn2_topright_short:
+      name: Button 2 - Top Right - Short
+      selector:
+        action:
+      default: []
+    btn2_topright_long:
+      name: Button 2 - Top Right - Long
+      selector:
+        action:
+      default: []
+#    btn2_topright_release:
+#      name: Button 2 - Top Right - Long Release
+#      selector:
+#        action:
+#      default: []
+    btn3_bottomleft_short:
+      name: Button 3 - Bottom Left - Short
+      selector:
+        action:
+      default: []
+    btn4_bottomright_short:
+      name: Button 4 - Bottom Right - Short
+      selector:
+        action:
+      default: []
+    btn4_bottomright_long:
+      name: Button 4 - Bottom Right - Long
+      selector:
+        action:
+      default: []
+#    btn4_bottomright_release:
+#      name: Button 4 - Bottom Right - Long Release
+#      selector:
+#        action:
+#      default: []
+
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_id: !input remote
+
+action:
+  - variables:
+      command: "{{ trigger.event.data.command }}"
+      cluster_id: "{{ trigger.event.data.cluster_id }}"
+      endpoint_id: "{{ trigger.event.data.endpoint_id }}"
+      args: "{{ trigger.event.data.args }}"
+
+  - choose:
+      # Button 1 - Top left - Short
+      - conditions:
+          - "{{ command == 'on' }}"
+        sequence: !input btn1_topleft_short
+
+      # Button 2 - Top right- Short
+      - conditions:
+          - "{{ command == 'step' }}"
+          - "{{ args == [0,51,10] }}"
+        sequence: !input btn2_topright_short
+
+      # Button 2 - Top right- Long
+      - conditions:
+          - "{{ command == 'move' }}"
+          - "{{ args == [0,51] }}"
+        sequence: !input btn2_topright_long
+
+#      # Button 2 - Top right- Long Release
+#      - conditions:
+#          - "{{ command == 'stop' }}"
+#        sequence: !input btn2_topright_release
+
+      # Button 3 -  Bottom left - Short
+      - conditions:
+          - "{{ command == 'off' }}"
+        sequence: !input btn3_bottomleft_short
+
+      # Button 4 - Top right- Short
+      - conditions:
+          - "{{ command == 'step' }}"
+          - "{{ args == [1,51,10] }}"
+        sequence: !input btn4_bottomright_short
+
+      # Button 4 - Top right- Long
+      - conditions:
+          - "{{ command == 'move' }}"
+          - "{{ args == [1,51] }}"
+        sequence: !input btn4_bottomright_long
+
+#      # Button 4 - Top right- Long Release
+#      - conditions:
+#          - "{{ command == 'stop' }}"
+#        sequence: !input btn4_bottomright_release
+
+    # Any other event will cancel the repeat loops.
+    default: []

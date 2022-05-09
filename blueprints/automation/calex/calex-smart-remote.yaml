@@ -68,7 +68,18 @@ action:
       command: "{{ trigger.event.data.command }}"
       cluster_id: "{{ trigger.event.data.cluster_id }}"
       endpoint_id: "{{ trigger.event.data.endpoint_id }}"
-      args: "{{ trigger.event.data.args }}"
+      #args: "{{ trigger.event.data.args }}"
+      #params: "{{ trigger.event.data.params }}"
+      transition_time: "{% if trigger.event.data.params.transition_time is defined %}{{ trigger.event.data.params.transition_time }}{%else%}0{% endif %}"
+      step_mode: "{% if trigger.event.data.params.step_mode is defined %}{{ trigger.event.data.params.step_mode|int }}{% endif %}"
+      step_size: "{% if trigger.event.data.params.step_size is defined %}{{ trigger.event.data.params.step_size|int }}{% endif %}"
+      move_mode: "{% if trigger.event.data.params.move_mode is defined %}{{ trigger.event.data.params.move_mode|int }}{% endif %}"
+      move_size: "{% if trigger.event.data.params.move_size is defined %}{{ trigger.event.data.params.move_size|int }}{% endif %}"
+      rate: "{% if trigger.event.data.params.rate is defined %}{{ trigger.event.data.params.rate }}{% endif %}"
+      color_temp_mireds: "{% if trigger.event.data.params.color_temp_mireds is defined %}{{ trigger.event.data.params.color_temp_mireds }}{% endif %}"
+      enhanced_hue: "{% if trigger.event.data.params.enhanced_hue is defined %}{{ trigger.event.data.params.enhanced_hue }}{% endif %}"
+      saturation: "{% if trigger.event.data.params.saturation is defined %}{{ trigger.event.data.params.saturation }}{% endif %}"
+
   - choose:
       # Short-Press on the ON button.
       - conditions:
@@ -85,31 +96,41 @@ action:
             target: !input light
 
       # Short-Press on the DIM UP button.
+      # args[0] = params.step_mode
+      # args[1] = params.step_size (42)
+      # args[2] = params.transition_time (3)
       - conditions:
           - "{{ command == 'step' }}"
-          - "{{ args == [0, 42, 3] }}"
+          - "{{ step_mode == 0 }}"
         sequence:
           - service: light.turn_on
             target: !input light
             data:
+              transition: "{{ transition_time / 10 }}"
               brightness_step_pct: 10
-#              transition: 1
+#              brightness_step_pct: {{ step_size }}
 
       # Short-Press on the DIM DOWN button.
+      # args[0] = params.step_mode
+      # args[1] = params.step_size (42)
+      # args[2] = params.transition_time (3)
       - conditions:
           - "{{ command == 'step' }}"
-          - "{{ args == [1, 42, 3] }}"
+          - "{{ step_mode== 1 }}"
         sequence:
           - service: light.turn_on
             target: !input light
             data:
+              transition: "{{ transition_time / 10 }}"
               brightness_step_pct: -10
-#              transition: 1
+#              brightness_step_pct: "-{{ step_size }}"
 
       # Hold on the DIM UP button.
+      # args[0] = params.move_mode
+      # args[1] = params.rate (100)
       - conditions:
           - "{{ command == 'move' }}"
-          - "{{ args == [0, 100] }}"
+          - "{{ move_mode == 0 }}"
         sequence:
           - repeat:
               count: 10
@@ -117,14 +138,17 @@ action:
                 - service: light.turn_on
                   target: !input light
                   data:
+                    transition: "{{ transition_time / 10 }}"
                     brightness_step_pct: 10
-#                    transition: 1
+#                    brightness_step_pct: "{{ rate / 10 }}"
                 - delay: 0.5
 
       # Hold on the DIM DOWN button.
+      # args[0] = params.move_mode
+      # args[1] = params.rate (100)
       - conditions:
           - "{{ command == 'move' }}"
-          - "{{ args == [1, 100] }}"
+          - "{{ move_mode == 1 }}"
         sequence:
           - repeat:
               count: 10
@@ -132,19 +156,39 @@ action:
                 - service: light.turn_on
                   target: !input light
                   data:
+                    transition: "{{ transition_time / 10 }}"
                     brightness_step_pct: -10
-#                    transition: 1
+#                    brightness_step_pct: -"{{ rate / 10 }}"
                 - delay: 0.5
 
       # Short-Press on the W button.
+      # args[0] = params.color_temp_mireds
+      # args[1] = params.transition_time
       - conditions:
           - "{{ command == 'move_to_color_temp' }}"
         sequence:
           - service: light.turn_on
             target: !input light
             data:
-              color_temp: "{{ args.0 }}"
-              transition: "{{ args.1 }}"
+              transition: "{{ transition_time / 10 }}"
+              color_temp: "{{ color_temp_mireds }}"
 
+      # Touch color rotator
+      # args[0] = params.enhanced_hue
+      # args[1] = params.saturation
+      # args[2] = params.transition_time
+      - conditions:
+          - "{{ command == 'enhanced_move_to_hue_and_saturation' }}"
+        sequence:
+          - service: notify.admins
+            data:
+              message: "{{ enhanced_hue }}"
+          - service: light.turn_on
+            target: !input light
+            data:
+              transition: "{{ transition_time / 10 }}"
+              hs_color:
+                - "{{ ( enhanced_hue|float / 65535 ) * 360 }}"
+                - "{{ ( saturation|float / 254 ) * 100 }}"
 
     default: []

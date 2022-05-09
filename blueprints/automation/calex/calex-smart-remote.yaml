@@ -1,6 +1,6 @@
 blueprint:
 
-  name: ZHA - CALEX - Smart remote - Custom Actions
+  name: ZHA - CALEX - Smart remote
 
   description: >-
     This automation simulates the use of the Calex Dimmer Switch Colour Control

@@ -180,9 +180,6 @@ action:
       - conditions:
           - "{{ command == 'enhanced_move_to_hue_and_saturation' }}"
         sequence:
-          - service: notify.admins
-            data:
-              message: "{{ enhanced_hue }}"
           - service: light.turn_on
             target: !input light
             data:
